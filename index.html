@@ -1,355 +1,295 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>HOIDIR OPERATOR CHECKER</title>
+  <title>HOIDIR NETWORK TOOL - PRO</title>
   <link rel="icon" href="https://files.catbox.moe/ejn7q9.jpeg" />
 
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#05060a">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="HOIDIR OP V2">
-  <link rel="apple-touch-icon" href="https://files.catbox.moe/ejn7q9.jpeg">
-
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
     :root {
-      --size: 300px; 
-      --duration: 5s;
-      --bg:#05060a;
-      --accent:#F4320B;
-      --accent2:#FF00F7;
-      --premium: #FFD700;
-      --muted:#EBE8EB;
-      --mono:'Share Tech Mono', monospace;
-      --ui: 'Inter', system-ui, sans-serif;
+      --bg: #05060a;
+      --card-bg: #0d1117;
+      --accent: #F4320B; 
+      --accent2: #FF00F7; 
+      --premium: #FFD700; 
+      --success: #00ff88;
+      --text: #e6eef6;
+      --muted: #8b949e;
+      --telegram: #0088cc;
     }
 
-    html,body{
-      height:100%;
-      margin:0;
-      background:var(--bg);
-      color:#e6eef6;
-      font-family:var(--ui);
-      -webkit-font-smoothing:antialiased;
+    * { box-sizing: border-box; }
+    body, html { 
+      margin: 0; padding: 0; background: var(--bg); 
+      color: var(--text); font-family: 'Inter', sans-serif;
       overflow-x: hidden;
     }
-    *{box-sizing:border-box}
 
-    /* INTRO OVERLAY */
-    #introOverlay{
-      position:fixed;
-      inset:0;
-      background:#000;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      z-index:9999;
-      transition: opacity .6s ease;
-      pointer-events: auto;
+    #introOverlay {
+      position: fixed; inset: 0; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity 0.6s ease;
     }
-
-    .video-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .video-wrap {
-      width: var(--size);
-      aspect-ratio: 1 / 1;
-      border-radius: 10px;
-      overflow: hidden;
-      background: white;
-      box-shadow: 0 0 10px rgba(255,255,255,0.15);
-      position: relative;
-    }
-
-    video#player {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .loading-area {
-      width: var(--size);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .loading-text { font-weight:600; letter-spacing:0.05em; font-size:0.9rem; color:#fff; font-family:var(--ui); }
-    .loading-bar { width:100%; height:8px; background: rgba(255,255,255,0.15); border-radius:999px; overflow:hidden; }
-    .loading-bar i { display:block; height:100%; width:0%; background: linear-gradient(90deg,#fff,rgba(255,255,255,0.5)); border-radius:999px; animation: fillBar var(--duration) linear forwards; }
-    @keyframes fillBar { from{width:0%} to{width:100%} }
-
-    .dots { display:flex; gap:6px; margin-top:6px; }
-    .dot { width:6px; height:6px; border-radius:50%; background:white; opacity:0.2; animation: blink 1s infinite; }
-    .dot:nth-child(2){ animation-delay:.2s } .dot:nth-child(3){ animation-delay:.4s }
-    @keyframes blink { 0%,80%,100%{opacity:.2; transform:translateY(0)} 40%{opacity:1; transform:translateY(-4px)} }
-
-    .brand-text { margin-top:12px; font-family: "Orbitron", sans-serif; font-weight:900; font-size:1.1rem; letter-spacing:2px; color:#fff; text-shadow:0 0 10px rgb(120,120,120); user-select:none; }
     #introOverlay.hidden { opacity: 0; pointer-events: none; }
 
-    /* MAIN APP */
-    #app {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity .45s ease .1s, visibility .45s ease .1s;
-      padding: 18px;
-      min-height: 100vh;
-      text-align: center;
+    .video-wrap {
+      width: 250px; height: 250px; border-radius: 20px; overflow: hidden;
+      border: 2px solid var(--accent); box-shadow: 0 0 20px var(--accent);
     }
+    video { width: 100%; height: 100%; object-fit: cover; }
+
+    #app { opacity: 0; visibility: hidden; transition: 0.5s; padding: 20px; text-align: center; }
     #app.visible { opacity: 1; visibility: visible; }
 
-    .topbar { display:flex; align-items:center; justify-content: center; padding:8px 12px; }
-    .title-top { font-family: var(--mono); font-size:18px; font-weight:600; color:var(--accent); }
-    
-    .robot-box{ background:radial-gradient(circle at 30% 20%, rgba(124,92,255,0.06), transparent 20%), linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); border-radius:10px; padding:14px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.02); width:280px; margin: 40px auto 12px; }
-    
-    .robot-face { 
-      width:120px; 
-      height:120px; 
-      border-radius:50%; 
-      background:#000; 
-      display:flex; 
-      align-items:center; 
-      justify-content:center; 
-      margin:0 auto; 
-      box-shadow:0 0 15px rgba(0,0,0,0.6); 
-      overflow: hidden; 
+    .card {
+      background: var(--card-bg); border-radius: 16px; padding: 20px;
+      border: 1px solid rgba(255,255,255,0.05); margin: 0 auto 20px;
+      max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    #app.visible .robot-face img {
-      animation: blurFade 5s ease-out forwards;
+    h2 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--accent); margin-bottom: 15px; }
+
+    input {
+      width: 100%; padding: 12px; background: #07090e;
+      border: 1px solid #30363d; border-radius: 8px; color: #fff;
+      font-family: 'Share Tech Mono'; margin-bottom: 10px; outline: none;
     }
 
-    @keyframes blurFade {
-      0% { filter: blur(15px); transform: scale(0.9); }
-      100% { filter: blur(0px); transform: scale(1); }
+    .btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      font-weight: 700; cursor: pointer; font-family: 'Orbitron';
+      transition: 0.3s; margin-bottom: 10px;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-premium { background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; }
+
+    .result-box {
+      background: #07090e; padding: 15px; border-radius: 8px;
+      border-left: 4px solid var(--accent2); font-family: 'Share Tech Mono';
+      color: var(--accent2); text-align: left; min-height: 50px;
     }
 
-    .robot-title-normal { font-size:18px; text-align:center; margin-top:8px; color:#e6eef6; font-weight:600; }
-
-    .input-field { width:280px; margin:0 auto 10px; padding:12px; border-radius:8px; border:1px solid var(--accent); background:#071018; color:#fff; font-family: var(--mono); font-size:14px; outline: none; display: block; }
-    .form-label{ font-size:12px; font-weight:500; margin:12px auto 6px; display:block; text-align:left; width:280px; color: var(--accent2); }
-    .info-box { width:280px; margin:0 auto 10px; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:#071018; color:#00ff88; font-family: var(--mono); font-size:14px; text-align: left; word-break: break-all; min-height: 44px; display: flex; align-items: center; }
-    
-    .btn{ width:280px; margin:10px auto; padding:12px 14px; background:linear-gradient(90deg,var(--accent),var(--accent2)); border:0; border-radius:10px; color:#000; font-weight:800; cursor:pointer; font-size:15px; display: block; transition: 0.3s; }
-    .btn:active { transform: scale(0.95); opacity: 0.8; }
-    
-    .btn-premium {
-      background: linear-gradient(90deg, #FFD700, #FFA500) !important;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+      display: none; align-items: center; justify-content: center; z-index: 10000;
     }
 
-    /* PREMIUM MODAL */
-    #premiumModal {
+    .info-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 2px; }
+    .info-value { color: var(--success); font-weight: 600; display: block; margin-bottom: 10px; }
+
+    footer { margin-top: 40px; padding: 20px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    .copyright { font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 1px; color: var(--accent); }
+    .about-text { font-size: 0.75rem; line-height: 1.5; margin-bottom: 20px; color: #8b949e; text-align: justify; }
+
+    .premium-list { text-align: left; margin: 15px 0; padding: 0; list-style: none; }
+    .premium-list li { font-size: 0.75rem; margin-bottom: 10px; color: #e6eef6; display: flex; align-items: flex-start; }
+    .premium-list li i { color: var(--premium); margin-right: 10px; margin-top: 3px; }
+
+    /* TELEGRAM FLOATING BUTTON */
+    .fab-telegram {
       position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.9);
-      backdrop-filter: blur(10px);
-      z-index: 10001;
-      display: none;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      background: var(--telegram);
+      color: white;
+      border-radius: 50%;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      font-size: 28px;
+      box-shadow: 0 0 15px rgba(0, 136, 204, 0.5);
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 999;
+      border: 2px solid rgba(255,255,255,0.2);
     }
-    .premium-content {
-      width: 100%;
-      max-width: 350px;
-      background: #0d1117;
-      padding: 20px;
-      border: 2px solid var(--premium);
-      border-radius: 15px;
-      max-height: 90vh;
-      overflow-y: auto;
+    .fab-telegram:hover {
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 0 25px rgba(0, 136, 204, 0.8);
     }
-    #map-container {
-      width: 100%;
-      height: 180px;
-      margin: 10px 0;
-      border-radius: 8px;
-      background: #222;
-      border: 1px solid #444;
-      overflow: hidden;
-    }
-
-    #welcomeBox {
-      position: fixed;
-      inset: 0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      backdrop-filter: blur(6px);
-      background: rgba(0,0,0,0.25);
-      z-index: 10000;
-      opacity: 0;
+    .fab-label {
+      position: absolute;
+      right: 70px;
+      background: var(--telegram);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-family: 'Orbitron';
+      white-space: nowrap;
       pointer-events: none;
-      transition: opacity .35s ease;
+      opacity: 0;
+      transition: 0.3s;
     }
-    #welcomeBox.active { opacity:1; pointer-events:auto; }
-    #welcomeContent {
-      background: rgba(0,0,0,0.8);
-      padding:20px 26px;
-      border-radius:10px;
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--accent);
-      text-align:center;
-    }
-    .gradientText{
-      font-family: 'Orbitron', sans-serif;
-      font-weight:900;
-      font-size:20px;
-      background: linear-gradient(90deg,#ff0000,#ff4a4a);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-    }
-
-    .small{ font-size:12px; color:var(--muted); margin-top:15px; text-align:center; opacity: 0.6; }
-
-    @media (max-width:420px){
-      .info-box, .btn, .form-label, .robot-box, .input-field { width:85%; }
+    .fab-telegram:hover .fab-label {
+      opacity: 1;
+      right: 75px;
     }
   </style>
 </head>
 <body>
 
   <div id="introOverlay">
-    <div class="video-container">
-      <div class="video-wrap">
-        <video id="player" playsinline preload="metadata">
-          <source src="https://files.catbox.moe/mm85lg.mp4" type="video/mp4">
-        </video>
-      </div>
-      <div class="loading-area" id="loading">
-        <div class="loading-text">Mempersiapkan Alat...</div>
-        <div class="loading-bar"><i id="bar"></i></div>
-        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-      </div>
-      <div class="brand-text">HOIDIR NETWORK TOOL</div>
+    <div class="video-wrap">
+      <video id="player" playsinline autoplay muted>
+        <source src="https://files.catbox.moe/mm85lg.mp4" type="video/mp4">
+      </video>
     </div>
-  </div>
-
-  <div id="welcomeBox">
-    <div id="welcomeContent">
-      <div class="gradientText">ALAT SIAP</div>
-    </div>
+    <p style="font-family:'Orbitron'; margin-top:20px; letter-spacing:2px;">INITIALIZING SYSTEM...</p>
   </div>
 
   <div id="app">
-    <header class="topbar">
-      <div class="title-top">HOIDIR OPERATOR V2</div>
+    <header style="margin-bottom: 30px;">
+        <img src="https://files.catbox.moe/ejn7q9.jpeg" style="width:80px; border-radius:50%; border:2px solid var(--accent);">
+        <h1 style="font-family:'Orbitron'; font-size: 1.2rem; color: var(--accent);">HOIDIR NETWORK <span style="color:#fff">V2.1</span></h1>
     </header>
 
-    <div class="robot-box">
-      <div class="robot-face">
-        <img src="https://files.catbox.moe/ejn7q9.jpeg" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
-      </div>
-      <div class="robot-title-normal">Operator Lookup & Info</div>
+    <div class="card">
+      <h2><i class="fa-solid fa-tower-broadcast"></i> Operator Checker</h2>
+      <input type="tel" id="inputNomor" placeholder="Example: 0812xxxx / 62812xxx">
+      <button class="btn btn-primary" onclick="lookupOperator()">ANALYZE NUMBER</button>
+      <div id="hasilLookup" class="result-box">Waiting for input...</div>
     </div>
 
-    <label class="form-label">MASUKKAN NOMOR HP (TARGET):</label>
-    <input type="tel" id="inputNomor" class="input-field" placeholder="Contoh: 0812xxxx" maxlength="13">
-    <button class="btn" onclick="lookupOperator()">CEK OPERATOR TARGET</button>
-    
-    <label class="form-label">HASIL ANALISA TARGET:</label>
-    <div id="hasilLookup" class="info-box" style="color: #ff00f7;">---</div>
+    <div class="card">
+      <h2><i class="fa-solid fa-network-wired"></i> Connection Details</h2>
+      <div style="text-align: left; font-size: 0.85rem;">
+        <span class="info-label">Current ISP</span>
+        <span id="isp" class="info-value">Loading...</span>
+        <div style="display: flex; justify-content: space-between;">
+            <div style="width: 48%;">
+                <span class="info-label">City</span>
+                <span id="city" class="info-value">Loading...</span>
+            </div>
+            <div style="width: 48%;">
+                <span class="info-label">Region/Province</span>
+                <span id="region" class="info-value">Loading...</span>
+            </div>
+        </div>
+      </div>
+      <button class="btn" onclick="location.reload()" style="background:#161b22; color:#fff; margin-top:15px; font-size: 0.8rem;">REFRESH DATA</button>
+    </div>
 
-    <hr style="border: 1px solid rgba(255,255,255,0.05); margin: 20px auto; width: 80%;">
+    <div class="card" style="border-color: var(--premium);">
+      <h2 style="color:var(--premium)">PREMIUM ACCESS</h2>
+      <button class="btn btn-premium" onclick="authPremium()">UNLOCK PREMIUM FEATURES</button>
+    </div>
 
-    <label class="form-label">PROVIDER JARINGAN ANDA :</label>
-    <div id="isp" class="info-box">Memuat...</div>
+    <div class="card" style="text-align: left;">
+      <h2><i class="fa-solid fa-circle-info"></i> About System</h2>
+      <p class="about-text">
+        Hoidir Network Tool V2.1 is an advanced utility platform designed for network analysis and cellular prefix identification in Indonesia. This system utilizes a high-precision database to ensure data accuracy while maintaining user privacy and security.
+      </p>
+      <div class="credits-box">
+        <span class="info-label">Lead Developer</span>
+        <span class="info-value" style="color:#fff">HOIDIR</span>
+        <span class="info-label">UI/UX Design</span>
+        <span class="info-value" style="color:#fff">Cyber-Core Interface</span>
+      </div>
+    </div>
 
-    <label class="form-label">LOKASI IP ANDA :</label>
-    <div id="lokasi" class="info-box">Memuat...</div>
-
-    <button class="btn btn-premium" onclick="authPremium()">
-      <i class="fa-solid fa-crown"></i> BUKA FITUR PREMIUM
-    </button>
-
-    <button class="btn" onclick="location.reload()" style="background: #333; color: #fff; margin-top: 5px;">REFRESH DATA</button>
-    
-    <div class="small">Sistem Analisis Prefix Indonesia</div>
+    <footer>
+      <p class="copyright">© 2026 HOIDIR NETWORK. ALL RIGHTS RESERVED.</p>
+      <p style="margin-top: 5px;">Distributed by Hoidir Systems</p>
+    </footer>
   </div>
 
-  <div id="premiumModal">
-    <div class="premium-content">
-      <div style="text-align: right; color: #666; cursor: pointer; font-weight: bold;" onclick="closePremium()">[ TUTUP ]</div>
-      <h3 style="color: var(--premium); font-family: 'Orbitron'; margin-top: 0;">PREMIUM TOOLS</h3>
-      
-      <p style="font-size: 11px; text-align: left; color: gold; margin-bottom: 5px;">MAPS LOKASI SAYA :</p>
-      <div id="map-container">
-        <iframe id="gmap_canvas" width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
-      </div>
+  <a href="https://t.me/+zo_7oh7p9YdiOGQ1" target="_blank" class="fab-telegram">
+    <span class="fab-label">JOIN COMMUNITY</span>
+    <i class="fa-brands fa-telegram"></i>
+  </a>
 
-      <hr style="border: 0.5px solid #333; margin: 15px 0;">
+  <div id="premiumModal" class="modal">
+    <div class="card" style="width:95%; max-width: 400px; position:relative; max-height: 90vh; overflow-y: auto;">
+        <span style="position:absolute; right:15px; top:10px; cursor:pointer; color: var(--muted);" onclick="closePremium()"><i class="fa-solid fa-xmark fa-lg"></i></span>
+        <h2 style="color:var(--premium); margin-bottom: 5px;">PREMIUM SUITE</h2>
+        <p style="font-size: 0.7rem; color: var(--muted); margin-bottom: 15px;">Advanced Tools & Global Tracking Enabled</p>
 
-      <p style="font-size: 11px; text-align: left; color: gold; margin-bottom: 5px;">WHATSAPP UNBAN HELPER :</p>
-      <input type="tel" id="nomorBan" class="input-field" placeholder="Nomor Terblokir (62xxx)" style="width: 100%;">
-      <button class="btn" style="width: 100%; font-size: 13px;" onclick="kirimUnban()">KIRIM EMAIL KE WHATSAPP</button>
-      
-      <p style="font-size: 10px; color: #888; margin-top: 10px;">*Gunakan email untuk meminta unban resmi.</p>
+        <ul class="premium-list">
+          <li>
+            <i class="fa-solid fa-location-crosshairs"></i>
+            <div>
+              <strong>Real-Time Geolocation</strong><br>
+              Access precise GPS coordinates mapped directly through Google Satellite.
+            </div>
+          </li>
+          <li>
+            <i class="fa-solid fa-shield-virus"></i>
+            <div>
+              <strong>WhatsApp Ban Recovery</strong><br>
+              Direct bridge to official Support Channels with AI appeal templates.
+            </div>
+          </li>
+          <li>
+            <i class="fa-solid fa-microchip"></i>
+            <div>
+              <strong>Extended Prefix Database</strong><br>
+              Priority access to the latest Indonesian cellular prefix updates.
+            </div>
+          </li>
+        </ul>
+
+        <div id="map-container" style="height:150px; background:#000; margin-bottom:15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--premium);">
+            <iframe id="gmap_canvas" width="100%" height="100%" frameborder="0"></iframe>
+        </div>
+
+        <input type="tel" id="nomorBan" placeholder="62xxx (Input Banned Number)">
+        <button class="btn btn-primary" onclick="kirimUnban()">SEND APPEAL REQUEST</button>
+        
+        <p style="font-size: 0.6rem; color: var(--muted); margin-top: 10px;">*Premium access is valid for authorized sessions only.</p>
     </div>
   </div>
 
 <script>
   const video = document.getElementById("player");
-  const bar = document.getElementById("bar");
   const introOverlay = document.getElementById("introOverlay");
   const app = document.getElementById("app");
-  const welcomeBox = document.getElementById("welcomeBox");
-
-  // --- PASSWORD PREMIUM DIUBAH MENJADI 42165 ---
   const PREMIUM_PASS = "42165"; 
 
-  video.addEventListener("loadedmetadata", () => {
-    const dur = video.duration || 5;
-    document.documentElement.style.setProperty("--duration", dur + "s");
-    if (bar) bar.style.animationDuration = dur + "s";
-  });
+  video.onended = showApp;
+  setTimeout(showApp, 6000);
 
-  window.addEventListener("load", () => {
-    video.muted = false;
-    video.play().catch(() => { video.muted = true; video.play(); });
-  });
+  function showApp() {
+    introOverlay.classList.add("hidden");
+    app.classList.add("visible");
+    fetchNetworkData();
+  }
 
   function lookupOperator() {
-    const nomor = document.getElementById('inputNomor').value.trim();
+    const input = document.getElementById('inputNomor').value.trim();
     const display = document.getElementById('hasilLookup');
-    
+    let nomor = input.replace(/[^0-9]/g, '');
+
+    if (nomor.startsWith('62')) { nomor = '0' + nomor.slice(2); } 
+    else if (nomor.startsWith('8')) { nomor = '0' + nomor; }
+
     if (nomor.length < 4) {
-      display.textContent = "Nomor terlalu pendek!";
+      display.textContent = "Number too short!";
       return;
     }
 
-    let prefix = nomor.substring(0, 4);
-    if(prefix.startsWith("+62")) prefix = "0" + nomor.substring(3, 6);
-    if(prefix.startsWith("62")) prefix = "0" + nomor.substring(2, 5);
-    
+    const prefix = nomor.substring(0, 4);
     const prefixMap = {
-      "0811": "Telkomsel (Halo)", "0812": "Telkomsel (simPATI)", "0813": "Telkomsel (simPATI)", "0821": "Telkomsel (AS)", "0822": "Telkomsel (Loop)", "0823": "Telkomsel (AS)", "0851": "Telkomsel (By.U)",
-      "0814": "Indosat (M2 Broadband)", "0815": "Indosat (Matrix/Mentari)", "0816": "Indosat (Mentari)", "0855": "Indosat (Matrix)", "0856": "Indosat (IM3)", "0857": "Indosat (IM3)", "0858": "Indosat (Mentari)",
+      "0811": "Telkomsel (Halo)", "0812": "Telkomsel (simPATI)", "0813": "Telkomsel (simPATI)", 
+      "0821": "Telkomsel (AS)", "0822": "Telkomsel (Loop)", "0823": "Telkomsel (AS)", "0851": "Telkomsel (By.U)",
+      "0814": "Indosat (M2)", "0815": "Indosat (Matrix)", "0816": "Indosat (Mentari)", 
+      "0855": "Indosat (Matrix)", "0856": "Indosat (IM3)", "0857": "Indosat (IM3)", "0858": "Indosat (Mentari)",
       "0817": "XL Axiata", "0818": "XL Axiata", "0819": "XL Axiata", "0859": "XL Axiata", "0877": "XL Axiata", "0878": "XL Axiata",
       "0831": "Axis", "0832": "Axis", "0833": "Axis", "0838": "Axis",
       "0895": "Three (3)", "0896": "Three (3)", "0897": "Three (3)", "0898": "Three (3)", "0899": "Three (3)",
       "0881": "Smartfren", "0882": "Smartfren", "0883": "Smartfren", "0884": "Smartfren", "0885": "Smartfren", "0886": "Smartfren", "0887": "Smartfren", "0888": "Smartfren", "0889": "Smartfren"
     };
 
-    const res = prefixMap[prefix.substring(0,4)];
-    
-    display.textContent = "Menganalisa...";
+    display.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
     setTimeout(() => {
-        display.textContent = res ? "Operator: " + res : "Operator Tidak Dikenali";
+        const res = prefixMap[prefix];
+        display.innerHTML = res ? `RESULT: <b>${res}</b>` : '<span style="color:#ff4a4a;">Operator Not Recognized</span>';
     }, 800);
   }
 
@@ -357,22 +297,22 @@
     fetch('https://ipapi.co/json/')
       .then(res => res.json())
       .then(data => {
-        document.getElementById('isp').textContent = data.org || "Unknown Provider";
-        document.getElementById('lokasi').textContent = `${data.city}, ${data.country_name}`;
+        document.getElementById('isp').textContent = data.org || "Unknown";
+        document.getElementById('city').textContent = data.city || "Unknown";
+        document.getElementById('region').textContent = data.region || "Unknown";
       })
       .catch(() => {
-        document.getElementById('isp').textContent = "Offline/Error";
-        document.getElementById('lokasi').textContent = "Tidak terdeteksi";
+        document.getElementById('isp').textContent = "Offline/Restricted";
       });
   }
 
   function authPremium() {
-    const input = prompt("MASUKKAN PASSWORD PREMIUM:");
+    const input = prompt("ENTER PREMIUM LICENSE KEY:");
     if (input === PREMIUM_PASS) {
       document.getElementById('premiumModal').style.display = 'flex';
       loadUserLocation();
-    } else {
-      alert("PASSWORD SALAH! AKSES DITOLAK.");
+    } else if(input != null) {
+      alert("ACCESS DENIED: Invalid Key!");
     }
   }
 
@@ -385,50 +325,19 @@
       navigator.geolocation.getCurrentPosition((position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        const url = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
-        document.getElementById('gmap_canvas').src = url;
+        document.getElementById('gmap_canvas').src = `https://maps.google.com/maps?q=${lat},${lon}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
       }, () => {
-        alert("Gagal mengambil lokasi. Pastikan GPS aktif.");
+        alert("Geolocation denied. Map view restricted.");
       });
     }
   }
 
   function kirimUnban() {
     const nomor = document.getElementById('nomorBan').value;
-    if (!nomor) return alert("Masukkan nomor yang terblokir!");
-
-    const subjek = "Pertanyaan tentang akun saya - Terblokir";
-    const body = `Halo Support WhatsApp,
-
-Akun saya dengan nomor (${nomor}) telah dinonaktifkan secara tiba-tiba. Saya yakin telah mengikuti semua Ketentuan Layanan WhatsApp dan tidak melakukan pelanggaran apapun. 
-
-Mohon bantuannya untuk meninjau kembali akun saya agar dapat digunakan kembali untuk keperluan komunikasi penting saya.
-
-Terima kasih atas bantuan Anda.`;
-
-    const mailtoUrl = `mailto:support@support.whatsapp.com?subject=${encodeURIComponent(subjek)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoUrl;
+    if (!nomor) return alert("Please enter the target number!");
+    const body = `Hello WhatsApp Support Team,\n\nI am writing to formally appeal the suspension of my account (${nomor}). I believe my account was suspended by error as I strictly adhere to the Terms of Service.\n\nPlease review my case and restore access.\n\nRegards.`;
+    window.location.href = `mailto:support@support.whatsapp.com?subject=Account Suspension Appeal - [${nomor}]&body=${encodeURIComponent(body)}`;
   }
-
-  function showApp() {
-    introOverlay.classList.add("hidden");
-    setTimeout(() => {
-      introOverlay.style.display = "none";
-      app.classList.add("visible");
-      fetchNetworkData();
-      
-      if (!localStorage.getItem("opShown")) {
-        setTimeout(() => {
-          welcomeBox.classList.add("active");
-          localStorage.setItem("opShown", "yes");
-          setTimeout(() => welcomeBox.classList.remove("active"), 2500);
-        }, 500);
-      }
-    }, 600);
-  }
-
-  video.addEventListener("ended", showApp);
-  setTimeout(showApp, 8000); 
 </script>
 </body>
-  </html>
+      </html>
